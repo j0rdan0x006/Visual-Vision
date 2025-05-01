@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@openverse/api-client": "^0.0.1-a1"
+  }
+}
