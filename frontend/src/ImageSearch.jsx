@@ -52,7 +52,6 @@ const ImageSearch = () => {
                     ))
                 ) : (
                     <p>No images to display. Try searching for something!</p>
-                    <p>No images to display. Try searching for something!</p>
                 )}
             </div>
         </div>
