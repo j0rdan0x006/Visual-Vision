@@ -2,7 +2,7 @@ name: Azure Deployment
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # Specify which branch triggers the deployment
 
 jobs:
   deploy:
@@ -11,16 +11,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Login to Azure CLI
-        uses: azure/login@v1
+      - name: Log in to Azure Container Registry (ACR)
+        uses: azure/docker-login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Login to ACR
-        run: |
-          az acr login --name visual --expose-token
-          echo "::add-mask::$(az acr login --name visual --expose-token --output tsv --query accessToken)"
-          docker login visual.azurecr.io -u 00000000-0000-0000-0000-000000000000 -p $(az acr login --name visual --expose-token --output tsv --query accessToken)
+          login-server: visual.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push frontend image
         run: |
