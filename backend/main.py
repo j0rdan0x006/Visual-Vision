@@ -5,15 +5,21 @@ from api.routes.history import router as history_router
 
 app = FastAPI()
 
+# ✅ CORS setup – Add both local and production frontend origins
+origins = [
+    "http://localhost:5173",  # local dev
+    "https://my-fastapi-app-3389.azurewebsites.net",  # production frontend
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], 
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], 
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Include routers
+# ✅ Register routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(history_router, prefix="/history", tags=["history"])
 

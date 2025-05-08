@@ -1,18 +1,27 @@
-# Start with a base Node.js image
-FROM node:18-alpine
+# ---------- Build Stage ----------
+FROM node:20 AS builder
 
-# Set the working directory inside the container
-WORKDIR /workspace
+# Set working directory
+WORKDIR /app
 
-# Copy the package.json and package-lock.json files into the container
-COPY package*.json .
-
-# Install the Node.js dependencies
-RUN npm install
-
-# Copy the entire frontend code into the container
+# Copy everything from frontend/
 COPY . .
 
-# Define the command to start the frontend development server
-# Using host 0.0.0.0 allows connections from outside the container
-CMD ["npm", "run", "dev"]
+# Install dependencies and build the app
+RUN npm install
+RUN npm run build
+
+# ---------- Serve Stage ----------
+FROM nginx:alpine
+
+# Copy built files to NGINX's public folder
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy a custom NGINX config (optional but recommended)
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose the port NGINX will serve from
+EXPOSE 3000
+
+# Run NGINX in foreground
+CMD ["nginx", "-g", "daemon off;"]

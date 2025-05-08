@@ -1,32 +1,33 @@
+# tests/conftest.py
+
 import pytest
-from config import app, db
-from models import Contact
-import main
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-@pytest.fixture
+from main import app
+from database.db import get_db, Base
+from models.user import User  # ✅ Must be imported
+
+SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"
+
+engine = create_engine(
+    SQLALCHEMY_TEST_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def override_get_db():
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+app.dependency_overrides[get_db] = override_get_db
+
+@pytest.fixture(scope="module")
 def client():
-    """Create a test client for the app."""
-    app.config['TESTING'] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    
-    with app.app_context():
-        db.create_all()
-        yield app.test_client()
-        db.session.remove()
-        db.drop_all()
-
-@pytest.fixture
-def sample_contacts():
-    """Create sample contacts for testing."""
-    contacts = [
-        Contact(first_name="John", last_name="Doe", email="john@example.com"),
-        Contact(first_name="Jane", last_name="Smith", email="jane@example.com"),
-        Contact(first_name="Bob", last_name="Johnson", email="bob@example.com")
-    ]
-    
-    with app.app_context():
-        for contact in contacts:
-            db.session.add(contact)
-        db.session.commit()
-    
-    return contacts
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)  # ✅ Ensures all models are set up
+    yield TestClient(app)
+    Base.metadata.drop_all(bind=engine)
