@@ -1,4 +1,8 @@
 fastapi
-uvicorn[standard]
-aiohttp
-python-multipart
+uvicorn
+sqlalchemy
+pydantic
+passlib[bcrypt]
+python-jose
+pydantic[email]
+python-dotenv

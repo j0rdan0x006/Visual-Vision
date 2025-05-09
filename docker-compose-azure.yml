@@ -1,12 +1,13 @@
-version: '3.9'
-
+# docker-compose-azure.yml
+version: '3'
 services:
   frontend:
-    image: ronitacr20354.azurecr.io/frontend:latest
+    image: <ACR_NAME>.azurecr.io/frontend:latest
     ports:
-      - "3000:80"  # Fix: maps host port 3000 to container port 80
-
+      - "80:80"         # expose port 80 externally (frontend is entrypoint)
+    depends_on:
+      - backend         # ensure backend starts before frontend
   backend:
-    image: ronitacr20354.azurecr.io/backend:latest
+    image: <ACR_NAME>.azurecr.io/backend:latest
     ports:
-      - "8000:8000"
+      - "8000:8000"     # optional: expose for clarity (not externally needed when proxied)
