@@ -1,8 +1,4 @@
 fastapi
-uvicorn
-sqlalchemy
-pydantic
-passlib[bcrypt]
-python-jose
-pydantic[email]
-python-dotenv
+uvicorn[standard]
+aiohttp  # if using async HTTP calls
+python-multipart  # if handling uploads
