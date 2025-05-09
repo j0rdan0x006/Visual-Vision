@@ -1,21 +1,29 @@
-# frontend/Dockerfile
+# Use Node.js 16 (or higher) image as the base
+FROM node:16 AS build
 
-# Stage 1: Build React app
-FROM node:16-alpine AS build
+# Set working directory
 WORKDIR /app
+
+# Copy package.json and package-lock.json (if available)
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-COPY . . 
-RUN npm run build  # produces a build/ directory with static files
 
-# Stage 2: Serve with Nginx
+# Copy the rest of your app
+COPY . .
+
+# Build the frontend application
+RUN npm run build
+
+# Stage 2: Serve the build output with Nginx
 FROM nginx:alpine
-# Copy custom Nginx config for proxying /api requests
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-# Copy React build output to Nginx's web root
-COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose port 80 for the web
+# Copy the build files from the build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
 
-# Nginx will start by default via its entrypoint
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
